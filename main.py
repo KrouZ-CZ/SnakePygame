@@ -8,13 +8,14 @@ H = 400
 sc = pygame.display.set_mode((W, H))
 pygame.display.set_caption("Snake game")
 
-FPS = 100
+FPS = int(100-(W*H/10000))
 clock = pygame.time.Clock()
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
+
 def init():
     global snake, frut, DIR, score
     snake = [[4, 3], [3, 3], [2, 3]]
@@ -36,14 +37,20 @@ def draw():
 def count():
     global frut, score
     if frut == snake[0]:
-        frut = [random.randint(0, 60), random.randint(0, 40)]
+        temp_1 = True
+        while temp_1:
+            temp_1 = False
+            frut = [random.randint(0, W/10-1), random.randint(0, H/10-1)]
+            for item in snake:
+                if item == frut:
+                    temp_1 = True
         snake.append(snake[len(snake) - 1])
         score += 1
 def ban():
     sc.fill(WHITE)
     # draw text
-    font = pygame.font.Font(None, 25)
-    text = font.render("Game over", True, BLACK)
+    font = pygame.font.Font(None, 50)
+    text = font.render("Game over", True, RED)
     text_rect = text.get_rect(center=(W/2, H/2-50))
     sc.blit(text, text_rect)
     # draw text
@@ -51,6 +58,16 @@ def ban():
     text = font.render(f'Score: {score}', True, BLACK)
     text_rect = text.get_rect(center=(W/2, H/2))
     sc.blit(text, text_rect)
+    # button
+    button = pygame.Surface((100, 50))
+    button.fill(WHITE)
+    pygame.draw.rect(button, RED, button.get_rect(), 5)
+    font = pygame.font.Font(None, 25)
+    text = font.render('Restart', True, (0, 0, 0))
+    text_rect = text.get_rect(center=(50, 25))
+    button.blit(text, text_rect)
+    temp = button.get_rect(center=(W/2, H/2+50))
+    sc.blit(button, temp)
     pygame.display.update()
     gm = True
     while gm:
@@ -60,22 +77,26 @@ def ban():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     exit()
-                elif event.key == pygame.K_KP_ENTER:
-                    gm = False
                 elif event.key == pygame.K_RETURN:
                     gm = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    recter = button.get_rect(center=(W/2, H/2+50))
+                    if event.pos[0] > recter.left and event.pos[1] > recter.top and event.pos[0] < recter.right and event.pos[1] < recter.bottom:
+                        gm = False
     init()
 def collision():
+    global snake
     temp = len(snake) - 1
     while temp > 0:
         if snake[temp] == snake[0]:
             ban()
             break
         temp -= 1
-    if snake[0][0] < 0: ban()
-    elif snake[0][1] < 0: ban()
-    elif snake[0][0] > W/10-1: ban()
-    elif snake[0][1] > H/10-1: ban()
+    if snake[0][0] < 0: snake[0][0] = W/10-1
+    elif snake[0][1] < 0: snake[0][1] = H/10-1
+    elif snake[0][0] > W/10: snake[0][0] = 0
+    elif snake[0][1] > H/10: snake[0][1] = 0
 def move():
     count = len(snake) - 1
     if DIR == "Right":
