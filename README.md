@@ -1,2 +1,2 @@
 # SnakePygame
-Snake by pygame
+Snake with pygame
